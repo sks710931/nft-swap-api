@@ -62,9 +62,10 @@ router.get("/kava/:address", async (req, res, next) => {
         console.log(contractObj)
           const items = await contractObj.getOwnerTokens(contract.address, address);
           for(var item of items){
+            const myId = ethers.getNumber(item.tokenId);
             const x = {
               contract_address: contract.address,
-              token_id: ethers.getNumber(item.tokenId),
+              token_id: `0x${myId.toString(16)}`,
               uri: item.tokenURI,
               network: "kava"
             };
@@ -79,7 +80,7 @@ router.get("/kava/:address", async (req, res, next) => {
     console.log(error);
     return res
       .status(500)
-      .json({ general: "Something went wrong, please try again", error });
+      .json({ general: "Something went wrong, please try again", error: error.message });
   }
 });
 
