@@ -53,6 +53,7 @@ router.get("/kava/:address", async (req, res, next) => {
     for (let contract of contracts) {
       if (contract.type === "ERC721") {
         let token = {};
+        console.log(process.env.KAVA_HELPER, process.env.API_KEY, process.env.API_SECRET);
         const contractObj = new ethers.Contract(
           process.env.KAVA_HELPER,
           helperAbi,
