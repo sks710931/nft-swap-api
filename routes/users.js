@@ -4,6 +4,7 @@ var router = express.Router();
 const sha256 = require("js-sha256").sha256;
 const { db } = require("./../firebase/admin");
 const erc721Abi = require("./../abis/erc721");
+const helperAbi = require("./../abis/helper");
 const ethers = require("ethers");
 
 require("dotenv").config();
@@ -46,65 +47,29 @@ router.get("/kava/:address", async (req, res, next) => {
     const contractsSnapshot = await contractsRef.get();
     const contracts = contractsSnapshot.docs.map((doc) => doc.data());
     const provider = new ethers.JsonRpcProvider(process.env.KAVA_RPC);
-    let balances = {};
-    //get balances
-    for (let contract of contracts) {
-      if (contract.type === "ERC721") {
-        const contractObj = new ethers.Contract(
-          contract.address,
-          erc721Abi,
-          provider
-        );
-        const bal = await contractObj.balanceOf(address);
-        balances[contract.address] = ethers.toNumber(bal);
-      }
-    }
-
-    //get tokenIds
-    let tokenIds = {};
-    for (let contract of contracts) {
-      if (contract.type === "ERC721") {
-        const contractObj = new ethers.Contract(
-          contract.address,
-          erc721Abi,
-          provider
-        );
-        tokenIds[contract.address] = [];
-        for (let i = 0; i < balances[contract.address]; i++) {
-          const id = await contractObj.tokenOfOwnerByIndex(address, i);
-          tokenIds[contract.address] = [
-            ethers.toNumber(id),
-            ...tokenIds[contract.address],
-          ];
-        }
-      }
-    }
+    
 
     let tokenInfo = [];
     for (let contract of contracts) {
       if (contract.type === "ERC721") {
         let token = {};
         const contractObj = new ethers.Contract(
-          contract.address,
-          erc721Abi,
+          process.env.KAVA_HELPER,
+          helperAbi,
           provider
         );
-        for (let tokenId of tokenIds[contract.address]) {
-          token = {
-            ...token,
-            contract_address: contract.address,
-            token_id: tokenId.toString(16),
-            network: "kava"
-          };
-          const uri = await contractObj.tokenURI(tokenId);
-          try{
-            const result = await axios.get(processUri(uri));
-            token = {...token, metadata: result.data}
-          }catch{
-            token = {...token, metadata: null}
+        console.log(contractObj)
+          const items = await contractObj.getOwnerTokens(ethers.getAddress(contract.address), ethers.getAddress(address));
+          for(var item of items){
+            const x = {
+              contract_address: contract.address,
+              token_id: ethers.getNumber(item.tokenId),
+              uri: item.tokenURI,
+              network: "kava"
+            };
+            tokenInfo.push(x);
+            console.log(x);
           }
-          tokenInfo = [token, ...tokenInfo];
-        }
       }
     }
 
