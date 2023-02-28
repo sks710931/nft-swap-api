@@ -59,7 +59,7 @@ router.get("/kava/:address", async (req, res, next) => {
           provider
         );
         console.log(contractObj)
-          const items = await contractObj.getOwnerTokens(ethers.getAddress(contract.address), ethers.getAddress(address));
+          const items = await contractObj.getOwnerTokens(contract.address, address);
           for(var item of items){
             const x = {
               contract_address: contract.address,
