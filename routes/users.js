@@ -6,7 +6,7 @@ const { db } = require("./../firebase/admin");
 const erc721Abi = require("./../abis/erc721");
 const helperAbi = require("./../abis/helper");
 const ethers = require("ethers");
-
+const userController = require("../controllers/octouser.controller");
 require("dotenv").config();
 /* GET users nfts. */
 
@@ -84,6 +84,12 @@ router.get("/kava/:address", async (req, res, next) => {
   }
 });
 
+
+router.post("/register", userController.create);
+router.post("/find", userController.findOne );
+router.post("/findAll", userController.findAll);
+router.post("/update", userController.update);
+router.post("/remove", userController.delete);
 const processUri = (uri) => {
   if (uri.includes("ipfs://")) {
     let url = uri;
