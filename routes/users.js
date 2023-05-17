@@ -86,9 +86,12 @@ router.get("/kava/:address", async (req, res, next) => {
 
 
 router.post("/register", userController.create);
+router.post("/register-user-top-nft", userController.createTopNFTs);
 router.post("/find", userController.findOne );
+router.post("/find-user-top-nft", userController.findUserTopNfts);
 router.post("/findAll", userController.findAll);
 router.post("/update", userController.update);
+router.post("/update-user-top-nft", userController.updateTopNfts);
 router.post("/remove", userController.delete);
 const processUri = (uri) => {
   if (uri.includes("ipfs://")) {

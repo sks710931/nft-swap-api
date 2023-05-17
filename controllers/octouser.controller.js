@@ -1,5 +1,6 @@
 const db = require("../models");
 const Octouser = db.octousers;
+const TopNfts = db.octousersTopNfts;
 const Op = db.Sequelize.Op;
 const { isAddress } = require("@ethersproject/address");
 
@@ -35,6 +36,41 @@ exports.create = async (req, res) => {
   }
 };
 
+exports.createTopNFTs= async (req, res) => {
+  const userId = req.body.userId;
+  if (!req.body.userId) {
+    res.status(400).send({
+      message: "Content can not be empty!",
+    });
+    return;
+  }
+ 
+  const top = {
+    NftAddress1: req.body.nftAddress1,
+    NftAddress2: req.body.nftAddress2,
+    NftAddress3: req.body.nftAddress3,
+    TokenId1: req.body.tokenId1,
+    TokenId2: req.body.tokenId2,
+    TokenId3: req.body.tokenId3,
+    UserId: req.body.userId
+  };
+    try {
+      let nfts = await TopNfts.findOne({ where: { UserId: userId } });
+      if (nfts === null) {
+        nfts = await TopNfts.create(top);
+        res.send(nfts);
+      } else {
+        res.send(nfts);
+      }
+    } catch (err) {
+      res.status(500).send({
+        message: err.message || "Some error occurred while creating the user top nfts.",
+      });
+      return;
+    }
+  
+  
+};
 exports.update = async (req, res) => {
   const userObj = {
     Id: req.body.id,
@@ -60,6 +96,30 @@ exports.update = async (req, res) => {
   } catch (err) {
     res.status(500).send({
       message: err.message || "Some error occurred while updating the user.",
+    });
+    return;
+  }
+};
+
+exports.updateTopNfts = async (req, res) => {
+  const top = {
+    NftAddress1: req.body.nftAddress1,
+    NftAddress2: req.body.nftAddress2,
+    NftAddress3: req.body.nftAddress3,
+    TokenId1: req.body.tokenId1,
+    TokenId2: req.body.tokenId2,
+    TokenId3: req.body.tokenId3,
+    UserId: req.body.userId
+  };
+  try {
+    let nfts = TopNfts.update(top,{where:{UserId: req.body.userId}});
+    res.send({
+        data: nfts,
+        message: "User Updated Successfully!"
+    })
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Some error occurred while updating the user top nfts.",
     });
     return;
   }
@@ -98,6 +158,25 @@ exports.findOne = async (req, res) => {
   }
 };
 
+exports.findUserTopNfts = async (req, res) => {
+  const userId = req.body.userId;
+  if (!req.body.userId) {
+    res.status(400).send({
+      message: "Content can not be empty!",
+    });
+    return;
+  }
+
+  try {
+    let nfts = await TopNfts.findOne({ where: { UserId: userId } });
+    res.send(nfts);
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Some error occurred while fetching the user nfts.",
+    });
+    return;
+  }
+}
 
 exports.delete = async (req,res) => {
     try{
