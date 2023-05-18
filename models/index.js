@@ -21,4 +21,5 @@ db.sequelize = sequelize;
 
 db.octousers = require("./octouser.model")(sequelize, Sequelize);
 db.octousersTopNfts = require("./octouser-top-nfts.model")(sequelize, Sequelize);
+db.marketItems = require("./market-item.model")(sequelize, Sequelize);
 module.exports = db;
