@@ -6,6 +6,7 @@ var cors = require("cors");
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var marketplaceRouter = require('./routes/market');
+var nftRouter = require('./routes/nft');
 const db = require("./models/index");
 var app = express();
 
@@ -26,5 +27,6 @@ db.sequelize.sync()
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/marketplace', marketplaceRouter);
+app.use('/nft', nftRouter);
 
 module.exports = app;
