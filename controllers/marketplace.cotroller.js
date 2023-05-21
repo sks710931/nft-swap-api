@@ -52,6 +52,7 @@ exports.createNewListing = async (req, res) => {
 exports.updateListingPrice = async (req, res) => {
   const marketId = req.body.marketId;
   const listingId = req.body.listingId;
+  const network = req.body.network;
   if (!req.body.marketId) {
     res.status(400).send({
       message: "Content can not be empty!",
@@ -64,7 +65,7 @@ exports.updateListingPrice = async (req, res) => {
   };
   try {
     let marketItem = await MarketItems.update(item, {
-      where: { MarketId: marketId, Id: listingId },
+      where: { MarketId: marketId, Id: listingId, Network: network },
     });
     res.send({
       data: marketItem,
@@ -83,6 +84,7 @@ exports.updateListingPrice = async (req, res) => {
 exports.executeSale = async (req, res) => {
   const marketId = req.body.marketId;
   const listingId = req.body.listingId;
+  const network = req.body.network;
   if (!req.body.marketId) {
     res.status(400).send({
       message: "Content can not be empty!",
@@ -96,7 +98,7 @@ exports.executeSale = async (req, res) => {
   };
   try {
     let marketItem = await MarketItems.update(item, {
-      where: { MarketId: marketId, Id: listingId },
+      where: { MarketId: marketId, Id: listingId, Network: network },
     });
     res.send({
       data: marketItem,
@@ -115,6 +117,7 @@ exports.executeSale = async (req, res) => {
 exports.cancelListing = async (req, res) => {
   const marketId = req.body.marketId;
   const listingId = req.body.listingId;
+  const network = req.body.network;
   if (!req.body.marketId) {
     res.status(400).send({
       message: "Content can not be empty!",
@@ -130,7 +133,7 @@ exports.cancelListing = async (req, res) => {
 
   try {
     let marketItem = await MarketItems.update(item, {
-      where: { MarketId: marketId, Id: listingId },
+      where: { MarketId: marketId, Id: listingId, Network: network },
     });
     res.send({
       data: marketItem,
@@ -144,4 +147,40 @@ exports.cancelListing = async (req, res) => {
     });
     return;
   }
+};
+
+
+exports.findOne = async (req, res) => {
+  const marketId = req.body.marketId;
+  const listingId = req.body.listingId;
+  const network = req.body.network;
+  if (!req.body.marketId) {
+    res.status(400).send({
+      message: "Content can not be empty!",
+    });
+    return;
+  }
+
+  try {
+    const marketItem = await MarketItems.findOne({where: {MarketId: marketId, Id: listingId, Network: network}});
+    res.send(marketItem);
+  }catch (err) {
+    res.status(500).send({
+        message: err.message || "Some error occurred while fetching the market item.",
+      });
+      return;
+  }
+};
+
+exports.findAll = async (req, res) => {
+    try {
+        const marketItem = await MarketItems.findAll({where: {IsSold: false}});
+        console.log(marketItem);
+        res.send(marketItem);
+      }catch (err) {
+        res.status(500).send({
+            message: err.message || "Some error occurred while fetching the market item.",
+          });
+          return;
+      } 
 };
