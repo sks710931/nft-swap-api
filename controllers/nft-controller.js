@@ -35,3 +35,29 @@ exports.getNFTDetail = async function (req, res, next) {
       next(err.message);
     }
   }
+
+  exports.getCollections = async (req, res, next) =>{
+    try {
+      const message = JSON.stringify({
+        action: "get_collections"
+      });
+      const hmac = sha256.hmac(api_secret, message);
+      const params = { api_key: api_key, hmac: hmac, message: message };
+      const result = await axios.get(process.env.API_URL, { params: params });
+      console.log(result)
+      if (!result.data.success) {
+        next(JSON.stringify({ success: false, message: result.data.message }));
+      } else {
+        if(result.data.collections){
+          var collections = result.data.collections.map(item =>({...item, network: "theta"}));
+          res.send({success: true, collections: collections});
+        }
+        else{
+          next("No collections available");
+        }
+      }
+    } catch (err) {
+      console.log(JSON.stringify(err));
+      next(err.message);
+    }
+  }
