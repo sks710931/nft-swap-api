@@ -1,8 +1,10 @@
+const { Contract, JsonRpcProvider, formatUnits } = require("ethers");
 const db = require("../models");
 const Settings = db.collectionSettings;
 const Op = db.Sequelize.Op;
 const { isAddress } = require("@ethersproject/address");
-
+const {market} = require("./../abis/marketplace");
+const erc721Abi = require("./../abis/erc721");
 // Create and Save a new collection setting
 exports.create = async (req, res) => {
   const address = req.body.address;
@@ -182,3 +184,63 @@ exports.findOne = async (req, res) => {
     return;
   }
 };
+
+const getMarketPlaceDefinedOwner = async (address, network) => {
+  const zeroAddress = "0x0000000000000000000000000000000000000000";
+  try{
+    let contract = {};
+    const provider = new JsonRpcProvider(process.env.THETA_RPC);
+    contract = new Contract(process.env.THETA_MARKETPLACE, market, provider );
+  let result = await contract.getCreatorFeeBasisPoints(address); 
+  if(result[0].toString() === zeroAddress){
+    result = await contract.getContractOwner(address);
+    if(result===zeroAddress){
+      const nftContract = new Contract(address,erc721Abi, provider );
+      const owner = await nftContract.owner();
+      return owner;
+    }
+    return result;
+  }else{
+    return result[0];
+  }
+  }catch(err){
+    console.log(err)
+    return zeroAddress;
+  }
+}
+exports.getCollectionOwner = async (req, res) => {
+  try{
+    const address = req.body.address;
+  const network = req.body.network;
+  const result = await getMarketPlaceDefinedOwner(address, network);
+  res.send({ownerAddress:result})
+  }catch(err){
+    res.status(500).send({message: "Error reading the owner address.", err});
+  }
+  
+}
+
+const getRoyaltyInfo = async (address, network) => {
+  const zeroAddress = "0x0000000000000000000000000000000000000000";
+  try{
+    let contract = {};
+    const provider = new JsonRpcProvider(process.env.THETA_RPC);
+    contract = new Contract(process.env.THETA_MARKETPLACE, market, provider );
+    let result = await contract.getCreatorFeeBasisPoints(address); 
+    return {address:result[0], bips: formatUnits(result[0], 0)};
+  }catch(err){
+    console.log(err)
+    return {address:zeroAddress, bips: 0};
+  }
+}
+exports.getRoyaltyInfo = async (req, res) => {
+  try{
+    const address = req.body.address;
+  const network = req.body.network;
+  const result = await getRoyaltyInfo(address, network);
+  res.send(result);
+  }catch(err){
+    res.status(500).send({message: "Error reading the royalty info.", err});
+  }
+  
+}
