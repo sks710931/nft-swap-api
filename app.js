@@ -7,6 +7,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var marketplaceRouter = require('./routes/market');
 var nftRouter = require('./routes/nft');
+var collectionSettingsRouter = require('./routes/collection-setting');
 const db = require("./models/index");
 var app = express();
 
@@ -28,5 +29,6 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/marketplace', marketplaceRouter);
 app.use('/nft', nftRouter);
+app.use("/collection-setting", collectionSettingsRouter)
 
 module.exports = app;
