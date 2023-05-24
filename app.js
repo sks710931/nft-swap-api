@@ -1,15 +1,16 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var cors = require("cors");
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var marketplaceRouter = require('./routes/market');
-var nftRouter = require('./routes/nft');
-var collectionSettingsRouter = require('./routes/collection-setting');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const cors = require("cors");
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const marketplaceRouter = require('./routes/market');
+const nftRouter = require('./routes/nft');
+const collectionSettingsRouter = require('./routes/collection-setting');
+const discussionsRouter = require('./routes/discussions');
 const db = require("./models/index");
-var app = express();
+const app = express();
 
 app.use(cors());
 app.use(logger('dev'));
@@ -30,5 +31,5 @@ app.use('/users', usersRouter);
 app.use('/marketplace', marketplaceRouter);
 app.use('/nft', nftRouter);
 app.use("/collection-setting", collectionSettingsRouter)
-
+app.use('/discussions', discussionsRouter);
 module.exports = app;
