@@ -52,6 +52,9 @@ module.exports = (sequelize, Sequelize) => {
     Medium: {
       type: DataTypes.STRING,
     },
+    Telegram: {
+      type: DataTypes.STRING,
+    },
     RoyaltyReceiver: {
       type: DataTypes.STRING,
     },

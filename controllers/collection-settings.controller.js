@@ -14,16 +14,23 @@ exports.create = async (req, res) => {
   }
   if (isAddress(address)) {
     try {
-      let setting = await Settings.findOne({ where: { CollectionAddress: address, Network:req.body.network } });
+      let setting = await Settings.findOne({
+        where: { CollectionAddress: address, Network: req.body.network },
+      });
       if (setting === null) {
-        newSetting = await Settings.create({ CollectionAddress: address, Network:req.body.network });
+        newSetting = await Settings.create({
+          CollectionAddress: address,
+          Network: req.body.network,
+        });
         res.send(newSetting);
       } else {
         res.send(setting);
       }
     } catch (err) {
       res.status(500).send({
-        message: err.message || "Some error occurred while creating the Collection Setting.",
+        message:
+          err.message ||
+          "Some error occurred while creating the Collection Setting.",
       });
       return;
     }
@@ -35,46 +42,87 @@ exports.create = async (req, res) => {
   }
 };
 
-exports.createTopNFTs= async (req, res) => {
-  const userId = req.body.userId;
-  if (!req.body.userId) {
+exports.updateAvatar = async (req, res) => {
+  const address = req.body.address;
+  if (!address) {
     res.status(400).send({
       message: "Content can not be empty!",
     });
     return;
   }
- 
+
   const top = {
-    NftAddress1: req.body.nftAddress1,
-    NftAddress2: req.body.nftAddress2,
-    NftAddress3: req.body.nftAddress3,
-    TokenId1: req.body.tokenId1,
-    TokenId2: req.body.tokenId2,
-    TokenId3: req.body.tokenId3,
-    UserId: req.body.userId
+    Avatar: req.body.avatar,
   };
-    try {
-      let nfts = await TopNfts.findOne({ where: { UserId: userId } });
-      if (nfts === null) {
-        nfts = await TopNfts.create(top);
-        res.send(nfts);
-      } else {
-        res.send(nfts);
-      }
-    } catch (err) {
-      res.status(500).send({
-        message: err.message || "Some error occurred while creating the user top nfts.",
+  try {
+    let setting = await Settings.findOne({
+      where: { CollectionAddress: address, Network: req.body.network },
+    });
+    if (setting !== null) {
+      let result = await Settings.update(top, {
+        where: { CollectionAddress: address, Network: req.body.network },
       });
-      return;
+      res.send(result);
+    } else {
+      res
+        .status(400)
+        .send({
+          success: false,
+          message: "Settings for this collection does not exist",
+        });
     }
-  
-  
+  } catch (err) {
+    res.status(500).send({
+      message:
+        err.message ||
+        "Some error occurred while updating the collection settings.",
+    });
+    return;
+  }
+};
+
+exports.updateBanner = async (req, res) => {
+  const address = req.body.address;
+  if (!address) {
+    res.status(400).send({
+      message: "Content can not be empty!",
+    });
+    return;
+  }
+
+  const top = {
+    BannerImage: req.body.banner,
+  };
+  try {
+    let setting = await Settings.findOne({
+      where: { CollectionAddress: address, Network: req.body.network },
+    });
+    if (setting !== null) {
+      let result = await Settings.update(top, {
+        where: { CollectionAddress: address, Network: req.body.network },
+      });
+      res.send(result);
+    } else {
+      res
+        .status(400)
+        .send({
+          success: false,
+          message: "Settings for this collection does not exist",
+        });
+    }
+  } catch (err) {
+    res.status(500).send({
+      message:
+        err.message ||
+        "Some error occurred while updating the collection settings.",
+    });
+    return;
+  }
 };
 exports.update = async (req, res) => {
-  const userObj = {
+  const settingObj = {
     Id: req.body.id,
-    WalletAddress: req.body.address,
-    Name: req.body.name,
+    CollectionName: req.body.name,
     AboutText: req.body.aboutText,
     Facebook: req.body.facebook,
     Twitter: req.body.twitter,
@@ -83,54 +131,32 @@ exports.update = async (req, res) => {
     TikTok: req.body.tikTok,
     Youtube: req.body.youtube,
     Medium: req.body.medium,
-    BannerImage: req.body.bannerImage,
-    Avatar: req.body.avatar,
+    Telegram: req.body.telegram,
   };
   try {
-    let user = Octouser.update(userObj,{where:{WalletAddress: req.body.address}});
+    let user = Settings.update(userObj, {
+      where: { CollectionAddress: req.body.address, Network: req.body.network },
+    });
     res.send({
-        data: user,
-        message: "User Updated Successfully!"
-    })
+      data: user,
+      message: "Collection Settings Updated Successfully!",
+    });
   } catch (err) {
     res.status(500).send({
-      message: err.message || "Some error occurred while updating the user.",
+      message: err.message || "Some error occurred while updating the collection settings.",
     });
     return;
   }
 };
 
-exports.updateTopNfts = async (req, res) => {
-  const top = {
-    NftAddress1: req.body.nftAddress1,
-    NftAddress2: req.body.nftAddress2,
-    NftAddress3: req.body.nftAddress3,
-    TokenId1: req.body.tokenId1,
-    TokenId2: req.body.tokenId2,
-    TokenId3: req.body.tokenId3,
-    UserId: req.body.userId
-  };
-  try {
-    let nfts = TopNfts.update(top,{where:{UserId: req.body.userId}});
-    res.send({
-        data: nfts,
-        message: "User Updated Successfully!"
-    })
-  } catch (err) {
-    res.status(500).send({
-      message: err.message || "Some error occurred while updating the user top nfts.",
-    });
-    return;
-  }
-};
 // Retrieve all Tutorials from the database.
 exports.findAll = async (req, res) => {
   try {
-    let users = await Octouser.findAll();
+    let users = await Settings.findAll();
     res.send(users);
   } catch (err) {
     res.status(500).send({
-      message: err.message || "Some error occurred while retreiving the users.",
+      message: err.message || "Some error occurred while retreiving the Collection Settings.",
     });
     return;
   }
@@ -147,48 +173,12 @@ exports.findOne = async (req, res) => {
   }
 
   try {
-    let user = await Octouser.findOne({ where: { WalletAddress: address } });
+    let user = await Octouser.findOne({ where: { CollectionAddress: address, Network: req.body.network } });
     res.send(user);
   } catch (err) {
     res.status(500).send({
-      message: err.message || "Some error occurred while creating the user.",
+      message: err.message || "Some error occurred while fetching the collection setting.",
     });
     return;
   }
 };
-
-exports.findUserTopNfts = async (req, res) => {
-  const userId = req.body.userId;
-  if (!req.body.userId) {
-    res.status(400).send({
-      message: "Content can not be empty!",
-    });
-    return;
-  }
-
-  try {
-    let nfts = await TopNfts.findOne({ where: { UserId: userId } });
-    res.send(nfts);
-  } catch (err) {
-    res.status(500).send({
-      message: err.message || "Some error occurred while fetching the user nfts.",
-    });
-    return;
-  }
-}
-
-exports.delete = async (req,res) => {
-    try{
-      const result =   await Octouser.destroy({where: {WalletAddress: req.body.address}});
-      if(result ==1){
-        res.send({message:"User deleted successfully!"});
-      }else{
-        res.status(404).send({message: "User not found!"});
-      }
-    }catch (err) {
-    res.status(500).send({
-      message: err.message || "Some error occurred while deleting the user.",
-    });
-    return;
-  }
-}
