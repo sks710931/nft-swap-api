@@ -3,7 +3,7 @@ const db = require("../models");
 const Settings = db.collectionSettings;
 const Op = db.Sequelize.Op;
 const { isAddress } = require("@ethersproject/address");
-const {market} = require("./../abis/marketplace");
+const { market } = require("./../abis/marketplace");
 const erc721Abi = require("./../abis/erc721");
 // Create and Save a new collection setting
 exports.create = async (req, res) => {
@@ -66,12 +66,10 @@ exports.updateAvatar = async (req, res) => {
       });
       res.send(result);
     } else {
-      res
-        .status(400)
-        .send({
-          success: false,
-          message: "Settings for this collection does not exist",
-        });
+      res.status(400).send({
+        success: false,
+        message: "Settings for this collection does not exist",
+      });
     }
   } catch (err) {
     res.status(500).send({
@@ -105,12 +103,10 @@ exports.updateBanner = async (req, res) => {
       });
       res.send(result);
     } else {
-      res
-        .status(400)
-        .send({
-          success: false,
-          message: "Settings for this collection does not exist",
-        });
+      res.status(400).send({
+        success: false,
+        message: "Settings for this collection does not exist",
+      });
     }
   } catch (err) {
     res.status(500).send({
@@ -145,7 +141,9 @@ exports.update = async (req, res) => {
     });
   } catch (err) {
     res.status(500).send({
-      message: err.message || "Some error occurred while updating the collection settings.",
+      message:
+        err.message ||
+        "Some error occurred while updating the collection settings.",
     });
     return;
   }
@@ -158,7 +156,9 @@ exports.findAll = async (req, res) => {
     res.send(users);
   } catch (err) {
     res.status(500).send({
-      message: err.message || "Some error occurred while retreiving the Collection Settings.",
+      message:
+        err.message ||
+        "Some error occurred while retreiving the Collection Settings.",
     });
     return;
   }
@@ -175,72 +175,88 @@ exports.findOne = async (req, res) => {
   }
 
   try {
-    let user = await Settings.findOne({ where: { CollectionAddress: address, Network: req.body.network } });
+    let user = await Settings.findOne({
+      where: { CollectionAddress: address, Network: req.body.network },
+    });
     res.send(user);
   } catch (err) {
     res.status(500).send({
-      message: err.message || "Some error occurred while fetching the collection setting.",
+      message:
+        err.message ||
+        "Some error occurred while fetching the collection setting.",
     });
     return;
   }
 };
-
+const ownnableAbi = [
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+];
 const getMarketPlaceDefinedOwner = async (address, network) => {
   const zeroAddress = "0x0000000000000000000000000000000000000000";
-  try{
+  try {
     let contract = {};
     const provider = new JsonRpcProvider(process.env.THETA_RPC);
-    contract = new Contract(process.env.THETA_MARKETPLACE, market, provider );
-  let result = await contract.getCreatorFeeBasisPoints(address); 
-  if(result[0].toString() === zeroAddress){
-    result = await contract.getContractOwner(address);
-    if(result===zeroAddress){
-      const nftContract = new Contract(address,erc721Abi, provider );
-      const owner = await nftContract.owner();
-      return owner;
+    contract = new Contract(process.env.THETA_MARKETPLACE, market, provider);
+    let result = await contract.getCreatorFeeBasisPoints(address);
+    if (result[0].toString() === zeroAddress) {
+      result = await contract.getContractOwner(address);
+      if (result === zeroAddress) {
+        const nftContract = new Contract(address, ownnableAbi, provider);
+        const owner = await nftContract.owner();
+        return owner;
+      }
+      return result;
+    } else {
+      return result[0];
     }
-    return result;
-  }else{
-    return result[0];
-  }
-  }catch(err){
-    console.log(err)
+  } catch (err) {
+    console.log(err);
     return zeroAddress;
   }
-}
+};
 exports.getCollectionOwner = async (req, res) => {
-  try{
+  try {
     const address = req.body.address;
-  const network = req.body.network;
-  const result = await getMarketPlaceDefinedOwner(address, network);
-  res.send({ownerAddress:result})
-  }catch(err){
-    res.status(500).send({message: "Error reading the owner address.", err});
+    const network = req.body.network;
+    const result = await getMarketPlaceDefinedOwner(address, network);
+    res.send({ ownerAddress: result });
+  } catch (err) {
+    res.status(500).send({ message: "Error reading the owner address.", err });
   }
-  
-}
+};
 
 const getRoyaltyInfo = async (address, network) => {
   const zeroAddress = "0x0000000000000000000000000000000000000000";
-  try{
+  try {
     let contract = {};
     const provider = new JsonRpcProvider(process.env.THETA_RPC);
-    contract = new Contract(process.env.THETA_MARKETPLACE, market, provider );
-    let result = await contract.getCreatorFeeBasisPoints(address); 
-    return {address:result[0], bips: formatUnits(result[0], 0)};
-  }catch(err){
-    console.log(err)
-    return {address:zeroAddress, bips: 0};
+    contract = new Contract(process.env.THETA_MARKETPLACE, market, provider);
+    let result = await contract.getCreatorFeeBasisPoints(address);
+    return { address: result[0], bips: formatUnits(result[0], 0) };
+  } catch (err) {
+    console.log(err);
+    return { address: zeroAddress, bips: 0 };
   }
-}
+};
 exports.getRoyaltyInfo = async (req, res) => {
-  try{
+  try {
     const address = req.body.address;
-  const network = req.body.network;
-  const result = await getRoyaltyInfo(address, network);
-  res.send(result);
-  }catch(err){
-    res.status(500).send({message: "Error reading the royalty info.", err});
+    const network = req.body.network;
+    const result = await getRoyaltyInfo(address, network);
+    res.send(result);
+  } catch (err) {
+    res.status(500).send({ message: "Error reading the royalty info.", err });
   }
-  
-}
+};
