@@ -134,7 +134,7 @@ exports.update = async (req, res) => {
     Telegram: req.body.telegram,
   };
   try {
-    let user = Settings.update(userObj, {
+    let user = Settings.update(settingObj, {
       where: { CollectionAddress: req.body.address, Network: req.body.network },
     });
     res.send({
