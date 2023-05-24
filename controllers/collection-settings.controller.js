@@ -173,7 +173,7 @@ exports.findOne = async (req, res) => {
   }
 
   try {
-    let user = await Octouser.findOne({ where: { CollectionAddress: address, Network: req.body.network } });
+    let user = await Settings.findOne({ where: { CollectionAddress: address, Network: req.body.network } });
     res.send(user);
   } catch (err) {
     res.status(500).send({
