@@ -13,7 +13,7 @@ const api_secret = process.env.API_SECRET;
 exports.getPopularCollections = async (req, res) => {
   try {
     const topCollections = await dbMgr.query(
-      "SELECT COUNT(NFTContractAddress) AS Amount,NFTContractAddress FROM collection_discussions GROUP BY NFTContractAddress ORDER BY Amount DESC LIMIT 0,12",
+      "SELECT COUNT(NFTContractAddress) AS Amount,NFTContractAddress, Network FROM collection_discussions GROUP BY NFTContractAddress, Network ORDER BY Amount DESC LIMIT 0,12",
       { type: QueryTypes.SELECT }
     );
 
@@ -32,7 +32,7 @@ exports.getPopularCollections = async (req, res) => {
           collection.NFTContractAddress.toUpperCase()
       );
       if (item) {
-        object = [...object, { ...item, amount: collection.Amount }];
+        object = [...object, { ...item, amount: collection.Amount, network: collection.Network }];
       }
     }
     res.send(_.orderBy(object, ["amount"], ["desc"]));
